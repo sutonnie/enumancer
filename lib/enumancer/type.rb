@@ -78,7 +78,7 @@ module Enumancer
       name = definition.name
       raise DefinitionError, "Reserved variant name: #{name}" if respond_to?(name, true)
 
-      constant = name.to_s.split('_').map(&:capitalize).join
+      constant = name.to_s.split('_').map { |part| part[0, 1].upcase + part[1..].to_s }.join
       raise DefinitionError, "Duplicate variant constant: #{constant}" if const_defined?(constant, false)
 
       fields = definition.fields.transform_values { |constraint| constraint.equal?(Self) ? self : constraint }.freeze

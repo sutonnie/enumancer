@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1
+
+- Remove snake_case validation for variant and field names.
+- Preserve camelCase, PascalCase, and acronyms in generated variant class names.
+- Keep duplicate name, reserved method, and generated constant collision checks.
+
 ## 2.0.0
 
 - Require Ruby 4.0 or newer.

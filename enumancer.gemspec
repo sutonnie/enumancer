@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name        = 'enumancer'
-  spec.version     = '2.0.0'
+  spec.version     = '2.0.1'
   spec.summary     = 'Closed enums and algebraic data types for Ruby.'
   spec.description = <<DESC
     Enumancer provides plain enums, backed enums, and algebraic data types

@@ -40,9 +40,12 @@ Each variant has its own generated `Data` class, such as `Color::Red`.
 Variants without fields return canonical frozen instances and store no payload
 or tag fields in those instances. Plain enum instances have no `value` method.
 
-Names can be symbols or strings. Variant and field names must be lowercase
-snake_case identifiers. Names that conflict with existing type or instance
-methods are rejected during definition.
+Names can be symbols or strings; there is no naming-style validation. Case is
+preserved, including camelCase and PascalCase. Generated class constants uppercase
+the first letter of each underscore-separated part: `lParen` becomes `LParen`,
+and `http_error` becomes `HttpError`. Ruby's rules for generated methods and
+constants still apply. Names that conflict with existing type or instance methods,
+or produce duplicate class constants, are rejected during definition.
 
 ## Backed enums
 

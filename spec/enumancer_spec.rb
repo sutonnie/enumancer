@@ -54,11 +54,46 @@ RSpec.describe Enumancer do
       end.to raise_error(Enumancer::DefinitionError, /Duplicate variant/)
     end
 
-    it 'rejects invalid names' do
+    it 'rejects names that are not strings or symbols' do
       expect { Enumancer.define { variant 1 } }.to raise_error(TypeError)
-      ['Red', 'red?', 'red-green', '', 'two words'].each do |name|
-        expect { Enumancer.define { variant name } }.to raise_error(Enumancer::DefinitionError)
+    end
+
+    it 'preserves camelCase, PascalCase, and acronyms' do
+      type = Enumancer.define do
+        variant :lParen
+        variant 'RParen'
+        variant :HTTPError
       end
+      expect(type.lParen.tag).to eq(:lParen)
+      expect(type.RParen.tag).to eq(:RParen)
+      expect(type.HTTPError.tag).to eq(:HTTPError)
+      expect(type::LParen.new).to equal(type.lParen)
+      expect(type::RParen.new).to equal(type.RParen)
+      expect(type::HTTPError.new).to equal(type.HTTPError)
+    end
+
+    it 'accepts leading and repeated underscores' do
+      type = Enumancer.define do
+        variant :_left
+        variant :right__paren
+      end
+      expect(type._left.tag).to eq(:_left)
+      expect(type.right__paren.tag).to eq(:right__paren)
+      expect(type::Left.new).to equal(type._left)
+      expect(type::RightParen.new).to equal(type.right__paren)
+    end
+
+    it 'matches and deserializes names without changing case' do
+      type = Enumancer.define do
+        variant :lParen
+        variant :rParen
+      end
+      matcher = type.matcher do
+        on(:lParen) { '(' }
+        on('rParen') { ')' }
+      end
+      expect(matcher.call(type.lParen)).to eq('(')
+      expect(type.from_json(type.rParen.to_json)).to equal(type.rParen)
     end
 
     it 'protects public and private type methods from constructors' do
@@ -74,6 +109,15 @@ RSpec.describe Enumancer do
           variant :a_1
         end
       end.to raise_error(Enumancer::DefinitionError, /constant/)
+    end
+
+    it 'rejects collisions between camelCase and snake_case constants' do
+      expect do
+        Enumancer.define do
+          variant :lParen
+          variant :l_paren
+        end
+      end.to raise_error(Enumancer::DefinitionError, /Duplicate variant constant: LParen/)
     end
 
     it 'requires a class or module for backing and field constraints' do
@@ -103,10 +147,13 @@ RSpec.describe Enumancer do
       end.to raise_error(Enumancer::DefinitionError, /Duplicate field/)
     end
 
-    it 'rejects invalid field identifiers' do
-      expect do
-        Enumancer.define { variant :ok, **{ 'invalid field' => Integer } }
-      end.to raise_error(Enumancer::DefinitionError, /Invalid field/)
+    it 'preserves camelCase and PascalCase field names' do
+      type = Enumancer.define { variant :ok, fieldName: Integer, OtherField: String }
+      instance = type.ok(fieldName: 42, OtherField: 'value')
+      expect(instance.fieldName).to eq(42)
+      expect(instance.OtherField).to eq('value')
+      expect(instance.with(fieldName: 43).fieldName).to eq(43)
+      expect(type.from_json(instance.to_json)).to eq(instance)
     end
   end
 

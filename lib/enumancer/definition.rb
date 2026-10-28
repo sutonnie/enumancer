@@ -21,9 +21,6 @@ module Enumancer
 
     def variant(name, *values, **fields)
       name = Names.normalize(name)
-      unless /\A[a-z][a-z0-9]*(?:_[a-z0-9]+)*\z/.match?(name.to_s)
-        raise DefinitionError, "Invalid variant name: #{name.inspect}"
-      end
       raise DefinitionError, "Duplicate variant: #{name}" if @definitions.key?(name)
 
       if @backed
@@ -36,9 +33,6 @@ module Enumancer
       normalized = {}
       fields.each do |field, constraint|
         field = Names.normalize(field)
-        unless /\A[a-z][a-z0-9]*(?:_[a-z0-9]+)*\z/.match?(field.to_s)
-          raise DefinitionError, "Invalid field name: #{field.inspect}"
-        end
         raise DefinitionError, "Duplicate field: #{field}" if normalized.key?(field)
 
         unless constraint.is_a?(Module) || constraint.equal?(Self)
